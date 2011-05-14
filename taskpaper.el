@@ -3,6 +3,7 @@
   (setq taskpaper-mode-map (make-sparse-keymap))
   (define-key taskpaper-mode-map (kbd "<S-return>") 'taskpaper-focus-project)
   (define-key taskpaper-mode-map (kbd "<S-backspace>") 'taskpaper-unfocus-project)
+  (define-key taskpaper-mode-map (kbd "C-c C-d") 'taskpaper-toggle-done)
   )
 
 (setq tpKeywords
@@ -39,6 +40,29 @@
   (add-text-properties 1 (point-max) '(invisible nil))
   )
 
+(defun taskpaper-toggle-done()
+  "Toggle done status on task, this sets @done-tag with date."
+  (interactive)
+  (let ((startpoint (point)) (line (line-number-at-pos)))
+    (re-search-forward "@done")
+    (if (= line (line-number-at-pos))
+        (progn
+          (end-of-line)
+          (re-search-backward "@")
+          (backward-char)
+          (kill-line)
+          )
+      (progn
+        (goto-char startpoint)
+        (end-of-line)
+        (insert " @done")
+        )
+      )
+    (goto-char startpoint)
+    )
+  )
+
+
 (defun taskpaper-mode ()
   "Major mode for editing taskpaper styled files."
   (interactive)
@@ -47,10 +71,13 @@
   (setq major-mode 'taskpaper-mode)
   (setq mode-name "Taskpaper") ; for display purposes in mode line
   (use-local-map taskpaper-mode-map)
+  
+  ;(copy-face 'font-lock-comment-face 'font-lock-taskpaper-done-face)
+  ;(set-face-attribute 'font-lock-taskpaper-done-face nil :strike-through t)
 
   (setq font-lock-defaults '(tpKeywords))
   
-
+  ;; Dont wrap lines
   (toggle-truncate-lines t)
   
   ;; ... other code here
