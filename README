@@ -1,0 +1,8 @@
+Taskpaper major mode for emacs.
+
+   Put taskpaper.el file somewhere (for instance in ~/emacs.d/taskpaper.el)
+   In .emacs, add: 
+      (load-file "~/taskpaper.el/taskpaper.el")
+      (require 'taskpaper-mode)
+   Load taskpaper-mode when you are in a buffer editing a taskpaper textfile
+
