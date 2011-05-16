@@ -1,9 +1,11 @@
 (defvar taskpaper-mode-map nil "Keymap for taskpaper-mode")
 (when (not taskpaper-mode-map)
   (setq taskpaper-mode-map (make-sparse-keymap))
-  (define-key taskpaper-mode-map (kbd "<S-return>") 'taskpaper-focus-project)
+  (define-key taskpaper-mode-map (kbd "<S-return>") 'taskpaper-focus-selected-project)
   (define-key taskpaper-mode-map (kbd "<S-backspace>") 'taskpaper-unfocus-project)
-  (define-key taskpaper-mode-map (kbd "C-c C-d") 'taskpaper-toggle-done)
+  (define-key taskpaper-mode-map (kbd "C-c d") 'taskpaper-toggle-done)
+  (define-key taskpaper-mode-map (kbd "C-c l") 'taskpaper-chose-project)
+  
   )
 
 (setq tpKeywords
@@ -16,8 +18,70 @@
   )
 )
 
-(defun taskpaper-focus-project()
-  "Hide everything not related to current project."
+(defun taskpaper-chose-project()
+  "Show a list of projects to chose from."
+  (interactive)
+  (let ((projects '()) (startpoint (point)) (x 0) (buffer (concat (buffer-name) ": Projects")))
+    (goto-char 0)
+    ;;Gather list of projects
+    (while (re-search-forward ":$" nil t)
+      (back-to-indentation)
+      (setq projects (append projects (list (buffer-substring-no-properties (point) (- (line-end-position) 1)))))
+      (end-of-line)
+      )
+    (goto-char startpoint)
+
+    (when (get-buffer buffer) 
+        (kill-buffer buffer))
+    ;;Open popupwindow for selecting project
+    (split-window-vertically (- (+ (length projects) 1)))
+    (other-window 1)
+    (get-buffer-create buffer)
+    (switch-to-buffer buffer)
+    (while (< x (length projects))
+      (insert (elt projects x))
+      (insert "\n")
+      (setq x (+ x 1))
+      )
+    (goto-char 0)
+    )
+  (toggle-read-only t)
+  (local-set-key (kbd "<return>") 'taskpaper-projectwindow-select)
+  (local-set-key (kbd "<ESC> <ESC>") 'taskpaper-projectwindow-esc)  
+  )
+
+(defun taskpaper-projectwindow-esc()
+  "Exit projectwindow, not selecting a project"
+  (interactive)
+  (local-unset-key (kbd "<return"))
+  (local-unset-key (kbd "<ESC> <ESC>"))
+  (kill-buffer)
+  (delete-window)
+  (other-window (- 1))
+  )
+
+(defun taskpaper-projectwindow-select()
+  "Action to perform when project is selected in project window."
+  (interactive)
+  (local-unset-key (kbd "<return>"))
+  (let ((buffer (substring (buffer-name) 0 -10)) project)
+    (message "substring: %s" buffer)
+    (setq project (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
+    (kill-buffer)
+    (delete-window)
+    (other-window (- 1))
+    (switch-to-buffer buffer)
+
+    (goto-char 0)
+    (re-search-forward project)
+    (taskpaper-unfocus-project)
+    (taskpaper-focus-selected-project)
+  
+    )
+  )
+
+(defun taskpaper-focus-selected-project()
+  "Hide everything not related to project under cursor."
   (interactive)
   (let ((startpoint (point)) start end)
     (end-of-line)
