@@ -1,8 +1,17 @@
-Taskpaper major mode for emacs.
+Simple Taskpaper major mode for emacs.
 
-   Put taskpaper.el file somewhere (for instance in ~/emacs.d/taskpaper.el)
-   In .emacs, add: 
-      (load-file "~/taskpaper.el/taskpaper.el")
-      (require 'taskpaper-mode)
-   Load taskpaper-mode when you are in a buffer editing a taskpaper textfile
+Put taskpaper.el file somewhere (for instance in ~/emacs.d/taskpaper.el)
+In .emacs, add: 
+   (load-file "~/taskpaper.el/taskpaper.el")
+   (require 'taskpaper-mode)
 
+M-x taskpaper-mode to activate, or in .emacs:
+   (add-to-list 'auto-mode-alist '("\\.taskpaper\\'" . taskpaper-mode))        
+for files with .taskpaper extension
+
+   Keyboard shortcuts:
+   
+   S-return     Focus project under cursor
+   S-backspace  Back to all projects
+   C-c l        Chose project from list
+   C-c d        Toggle done state
